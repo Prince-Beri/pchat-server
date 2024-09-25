@@ -16,19 +16,22 @@ const newUser = TryCatch(async (req, res, next) => {
     if(!file){
         return next(new ErrorHandler('Please Upload Avatar'));
     }
-
     const result = await uploadFilesToCloudinary([file]);
 
     const avatar  = {
         public_id: result[0].public_id,
         url: result[0].url,
     }
+    const checkIfUsername = await User.findOne({ username });
+    if(checkIfUsername){
+        return next(new ErrorHandler('Username is taken please try other username', 400));
+    }
    
     const user = await User.create({
-        name,
-        username,
+        name: name.trim(),
+        username: username.trim(),
         password,
-        bio,
+        bio: bio.trim(),
         avatar
     });
    sendToken(res, user, 201, 'User Created Successfully.');
